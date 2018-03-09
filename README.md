@@ -30,7 +30,7 @@ If you are using Home Assistant through your web browser, Android back key behav
     mWebView.setAdjustBackKeyBehavior(boolean); // If true, back key behavior will be like described above. Default is true.
     mWebView.setHideAdminMenuItems(boolean); // If true, administrator menu items will be hidden. Default is true.
 ```
-## Set on finish event handler
+## Set onFinish event handler
 It will be fired when WebView should be "closed" (here you should finish Activity, or close a dialog, or hide the WebView, etc..)
 ```
     mWebView.setEventHandler(new HassWebView.IEventHandler() {
