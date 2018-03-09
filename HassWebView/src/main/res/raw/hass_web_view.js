@@ -1,4 +1,4 @@
-var AndroidHass = {
+var HassWebView = {
 
     /* If true, the user is an administrator, false otherwise */
     _admin: false,
@@ -55,10 +55,10 @@ var AndroidHass = {
         }
 
         try{
-            AndroidHass.showDrawerItem("logbook", value);
-            AndroidHass.showDrawerItem("config", value);
-            AndroidHass.showDrawerItem("logout", value);
-            AndroidHass.showDeveloperTools(value);
+            this.showDrawerItem("logbook", value);
+            this.showDrawerItem("config", value);
+            this.showDrawerItem("logout", value);
+            this.showDeveloperTools(value);
             this._admin = value;
         }catch(err){
             // Elements are not available yet, we will try again after some time

@@ -2,24 +2,29 @@ package com.baviux.homeassistant.util;
 
 import android.content.Context;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class FileUtils {
 
     public static String getRawFileContents(Context context, int rawResId){
-        String line;
-        StringBuilder jsStringBuilder = new StringBuilder();
+        String fileContents = null;
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(rawResId)))) {
-            while ((line = reader.readLine()) != null) {
-                jsStringBuilder.append(line);
-            }
+        InputStream is = context.getResources().openRawResource(rawResId);
+
+        try {
+            fileContents = IOUtils.toString(is);
         }catch(Exception e){
             e.printStackTrace();
         }
+        finally {
+            IOUtils.closeQuietly(is);
+        }
 
-        return jsStringBuilder.toString();
+        return fileContents;
     }
 
 }

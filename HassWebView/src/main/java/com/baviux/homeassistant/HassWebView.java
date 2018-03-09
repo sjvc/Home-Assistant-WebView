@@ -3,10 +3,9 @@ package com.baviux.homeassistant;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Base64;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
-import android.webkit.ValueCallback;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -17,7 +16,16 @@ public class HassWebView extends WebView{
     private final static String TAG = "HassWebView";
 
     public interface IEventHandler{
-        void onFinish();
+        public void onFinish();
+    }
+
+    class JsEventHandler {
+        @JavascriptInterface
+        public void onFinish(){
+            if (mEventHandler != null){
+                mEventHandler.onFinish();
+            }
+        }
     }
 
     private IEventHandler mEventHandler;
@@ -49,6 +57,7 @@ public class HassWebView extends WebView{
         getSettings().setDomStorageEnabled(true);
         setWebViewClient(mWebViewClient);
         setWebChromeClient(mWebChromeClient);
+        addJavascriptInterface(new JsEventHandler(), "HassWebView_EventHandler");
     }
 
     private WebViewClient mWebViewClient = new WebViewClient() {
@@ -56,9 +65,9 @@ public class HassWebView extends WebView{
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
-            WebViewUtils.injectJavascriptFile(getContext(), HassWebView.this, R.raw.android_hass);
+            WebViewUtils.injectJavascriptFile(getContext(), HassWebView.this, R.raw.hass_web_view);
             if (mHideAdminMenuItems) {
-                WebViewUtils.execJavascript(getContext(), HassWebView.this, "AndroidHass.setAdmin(false);");
+                WebViewUtils.execJavascript(getContext(), HassWebView.this, "HassWebView.setAdmin(false);");
             }
 
             mPageLoadFinished = true;
@@ -80,7 +89,7 @@ public class HassWebView extends WebView{
     public void setHideAdminMenuItems(boolean hideAdminMenuItems){
         mHideAdminMenuItems = hideAdminMenuItems;
         if (mPageLoadFinished) {
-            WebViewUtils.execJavascript(getContext(), this, "AndroidHass.setAdmin(" + !mHideAdminMenuItems + ");");
+            WebViewUtils.execJavascript(getContext(), this, "HassWebView.setAdmin(" + !mHideAdminMenuItems + ");");
         }
     }
 
@@ -90,15 +99,15 @@ public class HassWebView extends WebView{
 
     @Override
     public void goBack() {
+        if (!canGoBack()){
+            if (mEventHandler != null) {
+                mEventHandler.onFinish();
+            }
+            return;
+        }
+
         if (mAdjustBackKeyBehavior){
-            evaluateJavascript("AndroidHass.onBackPressed();", new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String value) {
-                    if (!"true".equals(value) && mEventHandler != null) {
-                        mEventHandler.onFinish();
-                    }
-                }
-            });
+            WebViewUtils.execJavascript(getContext(), this, "if (!HassWebView.onBackPressed()){ HassWebView_EventHandler.onFinish(); }");
         }
         else{
             super.goBack();

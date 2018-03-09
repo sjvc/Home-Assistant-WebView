@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 26
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 15
         versionCode 1
         versionName "1.0"
     }
@@ -13,4 +13,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+dependencies{
+    compile 'commons-io:commons-io:2.4'
 }
