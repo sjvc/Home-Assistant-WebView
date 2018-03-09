@@ -15,8 +15,20 @@ If you are using Home Assistant through your web browser, Android back key behav
 - Else, onFinish event is fired, so you can exit the app, or close a dialog, or whatever you want.
 
 # Usage
+## Add this in your root build.gradle at the end of repositories:
+```
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+
 ## Add dependency to your build.gradle:
-`compile 'com.github.sjvc:Home-Assistant-WebView:master-SNAPSHOT'`
+```
+    compile 'com.github.sjvc:Home-Assistant-WebView:master-SNAPSHOT'
+```
 
 ## Add to your layout as a regular WebView:
 ```
