@@ -19,7 +19,7 @@ public class WebViewUtils {
 
             // String-ify the script byte-array using BASE64 encoding !!!
             String encoded = Base64.encodeToString(buffer, Base64.NO_WRAP);
-            view.loadUrl("javascript:(function() {" +
+            view.post(() -> view.loadUrl("javascript:(function() {" +
                     // If it's already injected -> do nothing
                     "if(typeof android_injected_res_" + rawResId + " != 'undefined') return;" +
                     // Else -> inject javascript
@@ -31,7 +31,7 @@ public class WebViewUtils {
                     // Create var to ensure we won't inject the same code twice
                     "script.innerHTML += 'var android_injected_res_" + rawResId + " = true;';" +
                     "parent.appendChild(script)" +
-                    "})()");
+                    "})()"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,7 +42,7 @@ public class WebViewUtils {
     }
 
     public static void execJavascript(Context context, WebView view, String javascript){
-        view.loadUrl("javascript:(function() { " + javascript + " })();");
+        view.post(() -> view.loadUrl("javascript:(function() { " + javascript + " })();"));
     }
 
 }
