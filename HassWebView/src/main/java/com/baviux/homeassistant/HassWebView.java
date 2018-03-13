@@ -124,28 +124,13 @@ public class HassWebView extends WebView{
     }
 
     public boolean onBackPressed() {
-        // If loaded web page is not Home Assistant -> event not handled
-        if (!mWebPageIsHass){
-            return false;
-        }
-
-        // If cannot go back -> "finish" WebView
-        if (!canGoBack()){
-            if (mOnFinishEventHandler != null) {
-                mOnFinishEventHandler.onFinish();
-            }
+        // If adjust back behavior is set -> let HassWebView handle it
+        if (mAdjustBackKeyBehavior && mWebPageIsHass){
+            WebViewUtils.execJavascript(getContext(), this, "if (!HassWebView.onBackPressed()){ HassWebView_EventHandler.onFinish(); }");
             return true;
         }
 
-        // If adjust back behavior is set -> let HassWebView handle it
-        if (mAdjustBackKeyBehavior){
-            WebViewUtils.execJavascript(getContext(), this, "if (!HassWebView.onBackPressed()){ HassWebView_EventHandler.onFinish(); }");
-        }
-        // Else -> let standard WebView handle it
-        else{
-            super.goBack();
-        }
-
-        return true;
+        // Event not handled
+        return false;
     }
 }
