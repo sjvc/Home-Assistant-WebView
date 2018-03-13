@@ -16,20 +16,38 @@ public class HassWebView extends WebView{
     private final static String TAG = "HassWebView";
     private final static String HASS_WEB_TITLE = "Home Assistant";
 
-    public interface IEventHandler{
-        public void onFinish();
+    public interface IOnFinishEventHandler{
+        void onFinish();
+    }
+
+    public interface IMoreInfoDialogHandler{
+        void onShowMoreInfoDialog();
+        void onHideMoreInfoDialog();
     }
 
     class JsEventHandler {
         @JavascriptInterface
         public void onFinish(){
-            if (mEventHandler != null){
-                mEventHandler.onFinish();
+            if (mOnFinishEventHandler != null){
+                mOnFinishEventHandler.onFinish();
+            }
+        }
+        @JavascriptInterface
+        public void onShowMoreInfoDialog(){
+            if(mMoreInfoDialogHandler != null){
+                mMoreInfoDialogHandler.onShowMoreInfoDialog();
+            }
+        }
+        @JavascriptInterface
+        public void onHideMoreInfoDialog(){
+            if(mMoreInfoDialogHandler != null){
+                mMoreInfoDialogHandler.onHideMoreInfoDialog();
             }
         }
     }
 
-    private IEventHandler mEventHandler;
+    private IOnFinishEventHandler mOnFinishEventHandler;
+    private IMoreInfoDialogHandler mMoreInfoDialogHandler;
     private boolean mWebPageIsHass = false;
     private boolean mPageLoadFinished = false;
     private boolean mHideAdminMenuItems = true;
@@ -69,13 +87,9 @@ public class HassWebView extends WebView{
 
             mWebPageIsHass = HASS_WEB_TITLE.equals(view.getTitle());
 
-            Log.d(TAG, "Web page is hass: " + mWebPageIsHass);
-
             if (mWebPageIsHass) {
                 WebViewUtils.injectJavascriptFile(getContext(), HassWebView.this, R.raw.hass_web_view);
-                if (mHideAdminMenuItems) {
-                    WebViewUtils.execJavascript(getContext(), HassWebView.this, "HassWebView.setAdmin(false);");
-                }
+                WebViewUtils.execJavascript(getContext(), HassWebView.this, "HassWebView.onLoad(" + (mHideAdminMenuItems ? "false" : "true") + ");");
             }
 
             mPageLoadFinished = true;
@@ -90,8 +104,12 @@ public class HassWebView extends WebView{
         }
     };
 
-    public void setEventHandler(IEventHandler handler){
-        mEventHandler = handler;
+    public void setOnFinishEventHandler(IOnFinishEventHandler handler){
+        mOnFinishEventHandler = handler;
+    }
+
+    public void setMoreInfoDialogHandler(IMoreInfoDialogHandler handler){
+        mMoreInfoDialogHandler = handler;
     }
 
     public void setHideAdminMenuItems(boolean hideAdminMenuItems){
@@ -113,8 +131,8 @@ public class HassWebView extends WebView{
 
         // If cannot go back -> "finish" WebView
         if (!canGoBack()){
-            if (mEventHandler != null) {
-                mEventHandler.onFinish();
+            if (mOnFinishEventHandler != null) {
+                mOnFinishEventHandler.onFinish();
             }
             return true;
         }

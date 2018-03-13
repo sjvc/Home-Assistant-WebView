@@ -3,8 +3,14 @@ var HassWebView = {
     /* If true, the user is an administrator, false otherwise */
     _admin: false,
 
-    /* Because I don't know when all the items I'll hide are available, I'll be checking it within an interval */
-    _setAdminTimeout: null,
+    /* Because I don't know when all elements are really loaded, I'll be checking it within an interval */
+    _retryOnLoadTimeout: null,
+
+    /* If true, onLoaded event has been fired, false otherwise */
+    _isLoaded: false,
+
+    /* If true, a more info dialog is visible. False otherwise */
+    _moreInfoDialogVisible: false,
 
     /* Fires when Android event onBackPressed is fired. Returns true if event is handled. False otherwise. */
     onBackPressed: function(){
@@ -38,9 +44,39 @@ var HassWebView = {
         document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("div.dev-tools").parentNode.style.display = show ? "" : "none";
     },
 
+    /* Returns More Info Dialog element */
+    getMoreInfoDialog: function(){
+        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("more-info-dialog").shadowRoot.querySelector("paper-dialog");
+    },
+
     /* Returns true if a "more info" dialog is visible. False otherwise */
     isMoreInfoDialogVisible: function(){
-        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("more-info-dialog").shadowRoot.querySelector("paper-dialog").style.display != "none";
+        return this.getMoreInfoDialog().style.display != "none";
+    },
+
+    /* Fired when more info dialog style changes  */
+    onMoreInfoDialogStyleChanged: function(){
+        var nowDialogIsVisible = this.isMoreInfoDialogVisible();
+
+        if (!this._moreInfoDialogVisible && nowDialogIsVisible){
+            HassWebView_EventHandler.onShowMoreInfoDialog();
+        }
+        else if (this._moreInfoDialogVisible && !nowDialogIsVisible){
+            HassWebView_EventHandler.onHideMoreInfoDialog();
+        }
+
+        this._moreInfoDialogVisible = nowDialogIsVisible;
+    },
+
+    /* Observe info dialog style changes */
+    observeOnMoreInfoDialogStyleChanges: function(){
+        var that  = this;
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutationRecord) {
+                that.onMoreInfoDialogStyleChanged();
+            });
+        });
+        observer.observe(this.getMoreInfoDialog(), { attributes : true, attributeFilter : ["style"] });
     },
 
     /* Returns true if the user is an administrator, false otherwise */
@@ -48,25 +84,37 @@ var HassWebView = {
         return _admin;
     },
 
-    /* Sets the user as admin, or not, and sets drawer menu items visibility */
-    setAdmin: function(value){
-        if (this._setAdminTimeout != null){
-            clearTimeout(this._setAdminTimeout);
+    /* Executed when webview loads the page */
+    onLoad: function(isAdmin){
+        if (this._retryOnLoadTimeout != null){
+            clearTimeout(this._retryOnLoadTimeout);
+            this._retryOnLoadTimeout = null;
+        }
+
+        if (this._isLoaded){
+            return;
         }
 
         try{
-            this.showDrawerItem("logbook", value);
-            this.showDrawerItem("config", value);
-            this.showDrawerItem("logout", value);
-            this.showDeveloperTools(value);
-            this._admin = value;
+            this.setAdmin(isAdmin);
+            this.observeOnMoreInfoDialogStyleChanges();
+            this._isLoaded = true;
         }catch(err){
             // Elements are not available yet, we will try again after some time
             var that = this;
-            this._setAdminTimeout = setTimeout(function(){
-                that.setAdmin(value);
+            this._retryOnLoadTimeout = setTimeout(function(){
+                that.onLoad(isAdmin);
             }, 200);
         }
+    },
+
+    /* Sets the user as admin, or not, and sets drawer menu items visibility */
+    setAdmin: function(isAdmin){
+        this.showDrawerItem("logbook", isAdmin);
+        this.showDrawerItem("config", isAdmin);
+        this.showDrawerItem("logout", isAdmin);
+        this.showDeveloperTools(isAdmin);
+        this._admin = isAdmin;
     }
 
 };
