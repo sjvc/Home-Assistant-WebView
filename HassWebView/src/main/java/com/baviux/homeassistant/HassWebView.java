@@ -123,6 +123,12 @@ public class HassWebView extends WebView{
         mAdjustBackKeyBehavior = adjustBackKeyBehavior;
     }
 
+    public void closeMoreInfoDialog(){
+        if (mWebPageIsHass) {
+            WebViewUtils.execJavascript(getContext(), this, "HassWebView.closeMoreInfoDialog();");
+        }
+    }
+
     public boolean onBackPressed() {
         // If adjust back behavior is set -> let HassWebView handle it
         if (mAdjustBackKeyBehavior && mWebPageIsHass){

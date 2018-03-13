@@ -15,14 +15,23 @@ var HassWebView = {
     /* Fires when Android event onBackPressed is fired. Returns true if event is handled. False otherwise. */
     onBackPressed: function(){
         // If a dialog is visible -> Close it
-        if (this.isMoreInfoDialogVisible()){
-            history.back();
+        if (this.closeMoreInfoDialog()){
             return true;
         }
 
         // If "Overview" screen is not displayed, display it
         if (location.href.indexOf("/states") == -1){
             this.getDrawerItem("states").click();
+            return true;
+        }
+
+        return false;
+    },
+
+    /* Closes a More Info dialog if it's visible. Returns true if it was visible, false otherwise */
+    closeMoreInfoDialog: function(){
+        if (this.isMoreInfoDialogVisible()){
+            history.back();
             return true;
         }
 
