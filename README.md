@@ -61,7 +61,7 @@ It will be fired when WebView should be "closed" (here you should finish Activit
             return;
         }
 
-        mWebView.goBack();
+        mWebView.onBackPressed();
     }
  ```
  ## Load HASS url
