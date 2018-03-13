@@ -9,7 +9,7 @@ import java.io.InputStream;
 
 public class WebViewUtils {
 
-    public static void injectJavascriptFile(Context context, WebView view, int rawResId) {
+    public static void injectJavascriptFile(Context context, final WebView view, int rawResId) {
         InputStream input;
         try {
             input = context.getResources().openRawResource(rawResId);
@@ -46,7 +46,7 @@ public class WebViewUtils {
         execJavascript(context, view,  FileUtils.getRawFileContents(context, rawResId));
     }
 
-    public static void execJavascript(Context context, WebView view, String javascript){
+    public static void execJavascript(Context context, final WebView view, String javascript){
         view.post(new Runnable() {
             @Override
             public void run() {
