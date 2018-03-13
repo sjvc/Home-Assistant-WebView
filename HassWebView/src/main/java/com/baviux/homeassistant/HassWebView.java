@@ -14,6 +14,7 @@ import com.baviux.homeassistant.util.WebViewUtils;
 
 public class HassWebView extends WebView{
     private final static String TAG = "HassWebView";
+    private final static String HASS_WEB_TITLE = "Home Assistant";
 
     public interface IEventHandler{
         public void onFinish();
@@ -29,6 +30,7 @@ public class HassWebView extends WebView{
     }
 
     private IEventHandler mEventHandler;
+    private boolean mWebPageIsHass = false;
     private boolean mPageLoadFinished = false;
     private boolean mHideAdminMenuItems = true;
     private boolean mAdjustBackKeyBehavior = true;
@@ -65,9 +67,15 @@ public class HassWebView extends WebView{
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
-            WebViewUtils.injectJavascriptFile(getContext(), HassWebView.this, R.raw.hass_web_view);
-            if (mHideAdminMenuItems) {
-                WebViewUtils.execJavascript(getContext(), HassWebView.this, "HassWebView.setAdmin(false);");
+            mWebPageIsHass = HASS_WEB_TITLE.equals(view.getTitle());
+
+            Log.d(TAG, "Web page is hass: " + mWebPageIsHass);
+
+            if (mWebPageIsHass) {
+                WebViewUtils.injectJavascriptFile(getContext(), HassWebView.this, R.raw.hass_web_view);
+                if (mHideAdminMenuItems) {
+                    WebViewUtils.execJavascript(getContext(), HassWebView.this, "HassWebView.setAdmin(false);");
+                }
             }
 
             mPageLoadFinished = true;
@@ -88,7 +96,7 @@ public class HassWebView extends WebView{
 
     public void setHideAdminMenuItems(boolean hideAdminMenuItems){
         mHideAdminMenuItems = hideAdminMenuItems;
-        if (mPageLoadFinished) {
+        if (mPageLoadFinished && mWebPageIsHass) {
             WebViewUtils.execJavascript(getContext(), this, "HassWebView.setAdmin(" + !mHideAdminMenuItems + ");");
         }
     }
@@ -97,20 +105,29 @@ public class HassWebView extends WebView{
         mAdjustBackKeyBehavior = adjustBackKeyBehavior;
     }
 
-    @Override
-    public void goBack() {
+    public boolean onBackPressed() {
+        // If loaded web page is not Home Assistant -> event not handled
+        if (!mWebPageIsHass){
+            return false;
+        }
+
+        // If cannot go back -> "finish" WebView
         if (!canGoBack()){
             if (mEventHandler != null) {
                 mEventHandler.onFinish();
             }
-            return;
+            return true;
         }
 
+        // If adjust back behavior is set -> let HassWebView handle it
         if (mAdjustBackKeyBehavior){
             WebViewUtils.execJavascript(getContext(), this, "if (!HassWebView.onBackPressed()){ HassWebView_EventHandler.onFinish(); }");
         }
+        // Else -> let standard WebView handle it
         else{
             super.goBack();
         }
+
+        return true;
     }
 }
