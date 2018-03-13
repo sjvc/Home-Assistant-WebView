@@ -45,11 +45,11 @@ If you are using Home Assistant through your web browser, Android back key behav
 ## Set onFinish event handler
 It will be fired when WebView should be "closed" (here you should finish Activity, or close a dialog, or hide the WebView, etc..)
 ```
-    mWebView.setEventHandler(new HassWebView.IEventHandler() {
-        @Override
-        public void onFinish() {
-            MainActivity.this.finish();
-        }
+    mWebView.setOnFinishEventHandler(new HassWebView.IOnFinishEventHandler() {
+	@Override
+	public void onFinish() {
+	    MainActivity.this.finish();
+	}
     });
  ```
  ## Redirect onBackPressed event from your Activity to WebView
