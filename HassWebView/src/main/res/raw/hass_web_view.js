@@ -55,7 +55,7 @@ var HassWebView = {
 
     /* Returns More Info Dialog element */
     getMoreInfoDialog: function(){
-        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("more-info-dialog").shadowRoot.querySelector("paper-dialog");
+        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("ha-more-info-dialog");
     },
 
     /* Returns true if a "more info" dialog is visible. False otherwise */
