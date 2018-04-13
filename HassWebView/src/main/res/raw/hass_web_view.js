@@ -55,7 +55,13 @@ var HassWebView = {
 
     /* Returns More Info Dialog element */
     getMoreInfoDialog: function(){
-        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("ha-more-info-dialog");
+        try{
+            // Hass v0.66.1+
+            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("ha-more-info-dialog");
+        }catch(err){
+            // Backwards compatibility
+            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("more-info-dialog").shadowRoot.querySelector("paper-dialog");
+        }
     },
 
     /* Returns true if a "more info" dialog is visible. False otherwise */
