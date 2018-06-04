@@ -44,8 +44,12 @@ var HassWebView = {
     },
 
     /* Returns an item from drawer menu */
-    getDrawerItem: function(name){
-        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("paper-listbox > paper-icon-item[data-panel='" + name + "']");
+    getDrawerItem: function(nameOrNumber){
+        if (Number.isInteger(nameOrNumber)){
+            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("paper-listbox > paper-icon-item:nth-child(" + nameOrNumber + ")");
+        }else{
+            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("paper-listbox > paper-icon-item[data-panel='" + nameOrNumber + "']");
+        }
     },
 
     /* Hides developer tools from drawer menu */
@@ -125,8 +129,8 @@ var HassWebView = {
 
     /* Sets the user as admin, or not, and sets drawer menu items visibility */
     setAdmin: function(isAdmin){
-        this.showDrawerItem("logbook", isAdmin);
-        this.showDrawerItem("config", isAdmin);
+        this.showDrawerItem(3, isAdmin);
+        this.showDrawerItem(5, isAdmin);
         this.showDrawerItem("logout", isAdmin);
         this.showDeveloperTools(isAdmin);
         this._admin = isAdmin;
