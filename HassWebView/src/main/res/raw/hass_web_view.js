@@ -1,5 +1,4 @@
 var HassWebView = {
-
     /* If true, the user is an administrator, false otherwise */
     _admin: false,
 
@@ -21,7 +20,7 @@ var HassWebView = {
 
         // If "Overview" screen is not displayed, display it
         if (location.href.indexOf("/states") == -1){
-            this.getDrawerItem("states").click();
+            location.href = this.getDrawerItem("states").getAttribute("href");
             return true;
         }
 
@@ -43,34 +42,40 @@ var HassWebView = {
         this.getDrawerItem(name).style.display = show ? "" : "none";
     },
 
+    /* Returns ha-sidebar element */
+    getSideBar: function(){
+        return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("app-drawer-layout > #drawer").querySelector("ha-sidebar");
+    },
+
     /* Returns an item from drawer menu */
-    getDrawerItem: function(nameOrNumber){
-        if (Number.isInteger(nameOrNumber)){
-            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("paper-listbox > paper-icon-item:nth-child(" + nameOrNumber + ")");
-        }else{
-            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("paper-listbox > paper-icon-item[data-panel='" + nameOrNumber + "']");
-        }
+    getDrawerItem: function(name){
+        return this.getSideBar().shadowRoot.querySelector("paper-listbox > a[data-panel='" + name + "']");
     },
 
     /* Hides developer tools from drawer menu */
     showDeveloperTools: function(show){
-        document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("#drawer").querySelector("ha-sidebar").shadowRoot.querySelector("div.dev-tools").parentNode.style.display = show ? "" : "none";
+        this.getSideBar().shadowRoot.querySelector("div.dev-tools").parentNode.style.display = show ? "" : "none";
+    },
+
+    /* Returns the profile link */
+    showProfileLink: function(show){
+        this.getSideBar().shadowRoot.querySelector("app-toolbar > a.profile-badge").style.display = show ? "" : "none";
+    },
+
+    /* Returns the parent of More Info Dialog element */
+    getMoreInfoDialogParent: function(){
+        return document.querySelector("home-assistant").shadowRoot;
     },
 
     /* Returns More Info Dialog element */
     getMoreInfoDialog: function(){
-        try{
-            // Hass v0.66.1+
-            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("ha-more-info-dialog");
-        }catch(err){
-            // Backwards compatibility
-            return document.querySelector("home-assistant").shadowRoot.querySelector("home-assistant-main").shadowRoot.querySelector("more-info-dialog").shadowRoot.querySelector("paper-dialog");
-        }
+        return document.querySelector("home-assistant").shadowRoot.querySelector("ha-more-info-dialog");
     },
 
     /* Returns true if a "more info" dialog is visible. False otherwise */
     isMoreInfoDialogVisible: function(){
-        return this.getMoreInfoDialog().style.display != "none";
+        var dialog = this.getMoreInfoDialog();
+        return dialog && dialog.style.display != "none";
     },
 
     /* Fired when more info dialog style changes  */
@@ -87,15 +92,52 @@ var HassWebView = {
         this._moreInfoDialogVisible = nowDialogIsVisible;
     },
 
+    isWaitingForMoreInfoDialog: false,
+
     /* Observe info dialog style changes */
     observeOnMoreInfoDialogStyleChanges: function(){
-        var that  = this;
-        var observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutationRecord) {
-                that.onMoreInfoDialogStyleChanged();
-            });
+        // Only wait for more info dialog if it's not waiting yet
+        if (!this.isWaitingForMoreInfoDialog){
+            var dialogParent = this.getMoreInfoDialogParent();
+
+            if (dialogParent == null){
+                throw "Dialog parent not loaded yet!";;
+            }
+            else {
+                this.isWaitingForMoreInfoDialog = true;
+                var that  = this;
+
+                // Wait for more info dialog to be added to DOM
+                this.waitForAddedNode({
+                    getElement: this.getMoreInfoDialog,
+                    parent: dialogParent,
+                    recursive: false,
+                    done: function(el){
+                        // Once the element (this.getMoreInfoDialog()) is added, observe style changes
+                        var observer = new MutationObserver(function(mutations) {
+                            mutations.forEach(function(mutationRecord) {
+                                that.onMoreInfoDialogStyleChanged();
+                            });
+                        });
+                        observer.observe(el, { attributes : true, attributeFilter : ["style"] });
+                    }
+                });
+            }
+        }
+    },
+
+    /* Waits for a node to be added */
+    waitForAddedNode: function(params) {
+        new MutationObserver(function(mutations) {
+            var el = params.getElement();
+            if (el) {
+                this.disconnect();
+                params.done(el);
+            }
+        }).observe(params.parent || document, {
+            subtree: !!params.recursive,
+            childList: true,
         });
-        observer.observe(this.getMoreInfoDialog(), { attributes : true, attributeFilter : ["style"] });
     },
 
     /* Returns true if the user is an administrator, false otherwise */
@@ -129,10 +171,10 @@ var HassWebView = {
 
     /* Sets the user as admin, or not, and sets drawer menu items visibility */
     setAdmin: function(isAdmin){
-        this.showDrawerItem(3, isAdmin);
-        this.showDrawerItem(5, isAdmin);
-        this.showDrawerItem("logout", isAdmin);
+        this.showDrawerItem("logbook", isAdmin);
+        this.showDrawerItem("config", isAdmin);
         this.showDeveloperTools(isAdmin);
+        this.showProfileLink(isAdmin);
         this._admin = isAdmin;
     }
 
