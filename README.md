@@ -1,7 +1,7 @@
 # Home-Assistant-WebView
 A modified Android WebView with some enhancements for display Home Assistant Web
 
-# Home-Assistant version
+## Home-Assistant version
 Home Assistant may change its DOM structure on new releases, so this WebView may not work correctly if it happens. 
 Latest commit is tested and fully working under Home Assistant v0.78.3.
 
