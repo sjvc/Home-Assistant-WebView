@@ -3,7 +3,7 @@ A modified Android WebView with some enhancements for display Home Assistant Web
 
 ## Home-Assistant version
 Home Assistant may change its DOM structure on new releases, so this WebView may not work correctly if it happens. 
-Latest commit is tested and fully working under Home Assistant v0.78.3.
+Latest commit is tested and fully working under **Home Assistant v0.78.3**.
 
 ## Hide administrator menu items
 You can hide administrator menu items from the drawer menu, so you can let your family members use home assistant without the risk they change any configuration parameter.
