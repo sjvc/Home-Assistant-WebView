@@ -19,8 +19,8 @@ var HassWebView = {
         }
 
         // If "Overview" screen is not displayed, display it
-        if (location.href.indexOf("/states") == -1){
-            location.href = this.getDrawerItem("states").getAttribute("href");
+        if (location.href.indexOf("/lovelace/default_view") == -1){
+            location.href = this.getDrawerItem("lovelace").getAttribute("href");
             return true;
         }
 
@@ -171,10 +171,10 @@ var HassWebView = {
 
     /* Sets the user as admin, or not, and sets drawer menu items visibility */
     setAdmin: function(isAdmin){
-        this.showDrawerItem("logbook", isAdmin);
-        this.showDrawerItem("config", isAdmin);
-        this.showDeveloperTools(isAdmin);
-        this.showProfileLink(isAdmin);
+        // this.showDrawerItem("logbook", isAdmin);
+        // this.showDrawerItem("config", isAdmin);
+        // this.showDeveloperTools(isAdmin);
+        // this.showProfileLink(isAdmin);
         this._admin = isAdmin;
     }
 
